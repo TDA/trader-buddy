@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { parseCSV } from '../../lib/csvParser'
 
 export default function UploadPage() {
   const [dragActive, setDragActive] = useState(false)
@@ -72,16 +73,22 @@ export default function UploadPage() {
       const text = await selectedFile.text()
       console.log('File content:', text.substring(0, 500) + '...')
       
-      // For now, just log the content
-      setMessage(`File uploaded successfully! Size: ${selectedFile.size} bytes`)
+      // Parse CSV directly
+      const result = parseCSV(text)
+      console.log('Parsed trades:', result.trades)
+      console.log('Parse errors:', result.errors)
       
-      // TODO: Parse CSV in next task
+      if (result.trades.length > 0) {
+        setMessage(`Successfully parsed ${result.trades.length} trades! ${result.errors.length > 0 ? `(${result.errors.length} errors)` : ''}`)
+      } else {
+        setMessage('No trades found in the file. Please check the CSV format.')
+      }
+      
       // TODO: Save trades to database in next task
       
     } catch (error) {
       console.error('Error reading file:', error)
       setMessage('Error reading file. Please try again.')
-    } finally {
       setUploading(false)
     }
   }
