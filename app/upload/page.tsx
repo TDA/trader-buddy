@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useTrades } from '../../context/TradesContext'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { parseCSV } from '../../lib/csvParser'
@@ -11,7 +12,11 @@ export default function UploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [uploadSuccess, setUploadSuccess] = useState(false)
+  const [saveProgress, setSaveProgress] = useState({ current: 0, total: 0 })
   const { session, loading: authLoading } = useAuth()
+  const { addTrade } = useTrades()
   const router = useRouter()
 
   // Redirect if not authenticated
@@ -78,13 +83,59 @@ export default function UploadPage() {
       console.log('Parsed trades:', result.trades)
       console.log('Parse errors:', result.errors)
       
+      // Reset uploading state since parsing is complete
+      setUploading(false)
+      
       if (result.trades.length > 0) {
         setMessage(`Successfully parsed ${result.trades.length} trades! ${result.errors.length > 0 ? `(${result.errors.length} errors)` : ''}`)
+        
+        // Save trades to database
+        setSaving(true)
+        setSaveProgress({ current: 0, total: result.trades.length })
+        try {
+          let savedCount = 0
+          let skippedCount = 0
+          
+          for (let i = 0; i < result.trades.length; i++) {
+            const trade = result.trades[i]
+            try {
+              // Create external_id from trade data to prevent duplicates
+              const externalId = `${trade.ticker}_${trade.trade_date}_${trade.side}_${trade.quantity}_${trade.price}`
+              
+              // TODO: Check for existing trades with same external_id before saving
+              // TODO: Add better duplicate detection logic
+              // TODO: Add progress indicator for large files
+              // TODO: Add option to preview trades before saving
+              // TODO: Add support for batch operations
+              // TODO: Add duplicate detection before saving (show user which trades are duplicates)
+              // TODO: Add preview modal to review trades before saving (allow user to edit/remove trades)
+              
+              await addTrade({
+                ...trade,
+                external_id: externalId
+              })
+              savedCount++
+            } catch (error) {
+              console.error('Error saving trade:', error)
+              // Continue with other trades even if one fails
+            }
+            
+            // Update progress
+            setSaveProgress({ current: i + 1, total: result.trades.length })
+          }
+          
+          setMessage(`Successfully saved ${savedCount} trades to your journal! ${skippedCount > 0 ? `(${skippedCount} duplicates skipped)` : ''} You can view them in your dashboard.`)
+          setUploadSuccess(true)
+          
+        } catch (error) {
+          console.error('Error saving trades:', error)
+          setMessage('Error saving trades to database. Please try again.')
+        } finally {
+          setSaving(false)
+        }
       } else {
         setMessage('No trades found in the file. Please check the CSV format.')
       }
-      
-      // TODO: Save trades to database in next task
       
     } catch (error) {
       console.error('Error reading file:', error)
@@ -96,6 +147,7 @@ export default function UploadPage() {
   const removeFile = () => {
     setSelectedFile(null)
     setMessage('')
+    setUploadSuccess(false)
   }
 
   if (authLoading) {
@@ -155,10 +207,10 @@ export default function UploadPage() {
                 <div className="space-x-3">
                   <button
                     onClick={handleUpload}
-                    disabled={uploading}
+                    disabled={uploading || saving}
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
                   >
-                    {uploading ? 'Processing...' : 'Process File'}
+                    {uploading ? 'Processing...' : saving ? 'Saving...' : 'Process File'}
                   </button>
                   <button
                     onClick={removeFile}
@@ -206,6 +258,34 @@ export default function UploadPage() {
                 : 'bg-blue-100 text-blue-700'
             }`}>
               {message}
+            </div>
+          )}
+
+          {/* Progress Bar */}
+          {saving && saveProgress.total > 0 && (
+            <div className="mt-4">
+              <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <span>Saving trades...</span>
+                <span>{saveProgress.current} / {saveProgress.total}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(saveProgress.current / saveProgress.total) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+
+          {/* View Trades Button */}
+          {uploadSuccess && (
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+              >
+                View Your Trades
+              </button>
             </div>
           )}
 

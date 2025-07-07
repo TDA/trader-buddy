@@ -35,6 +35,8 @@ function normalizeTrade(rawTrade: RawTrade, broker: string): NormalizedTrade | n
     // Robinhood CSV format
     if (broker === 'robinhood') {
       // TODO: Handle the option expiry rows like "Option Expiration for CRWD 5/30/2025 Call $490.00"
+      // TODO: Add support for more Robinhood transaction types (dividends, fees, etc.)
+      // TODO: Improve ticker extraction for complex option descriptions
       console.log('Processing Robinhood format for row:', rawTrade)
       console.log('Available keys:', Object.keys(rawTrade))
       
@@ -173,10 +175,12 @@ function detectBroker(headers: string[]): string {
     return 'robinhood'
   }
   
+  // TODO: Add TD Ameritrade header detection
   if (headerStr.includes('td') || headerStr.includes('ameritrade') || headers.some(h => h.toLowerCase().includes('td'))) {
     return 'td'
   }
   
+  // TODO: Add support for more brokers (Fidelity, Schwab, etc.)
   // Default to generic
   console.log('Defaulting to generic format')
   return 'generic'
