@@ -1,5 +1,6 @@
 import Image from "next/image";
 import SupabaseTest from "../components/SupabaseTest";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -16,6 +17,17 @@ export default function Home() {
       
       {/* Supabase Test */}
       <SupabaseTest />
+      
+      {/* Login Link */}
+      <div className="bg-blue-100 p-4 rounded-lg border">
+        <h3 className="font-bold mb-2">🔗 Navigation:</h3>
+        <Link 
+          href="/login" 
+          className="text-blue-600 hover:text-blue-800 underline"
+        >
+          Go to Login Page →
+        </Link>
+      </div>
       
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <Image
