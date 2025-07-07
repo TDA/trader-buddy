@@ -3,6 +3,16 @@ import Image from "next/image";
 export default function Home() {
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      {/* Tailwind Test Element */}
+      <div className="tailwind-test">
+        🎨 Tailwind is working! This should be red text on blue background with green border.
+      </div>
+      
+      {/* Direct Tailwind Classes Test */}
+      <div className="text-red-500 bg-blue-200 p-4 rounded-lg border-2 border-green-500">
+        🎯 Direct Tailwind classes test - should look the same as above!
+      </div>
+      
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <Image
           className="dark:invert"
