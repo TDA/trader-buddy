@@ -1,8 +1,22 @@
+'use client'
+
 import Image from "next/image";
 import SupabaseTest from "../components/SupabaseTest";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
+
+  const goToLogin = () => {
+    console.log('Navigating to login page...');
+    router.push('/login');
+  };
+
+  const goToTest = () => {
+    console.log('Navigating to test page...');
+    router.push('/test');
+  };
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       {/* Tailwind Test Element */}
@@ -18,15 +32,23 @@ export default function Home() {
       {/* Supabase Test */}
       <SupabaseTest />
       
-      {/* Login Link */}
+      {/* Navigation Links */}
       <div className="bg-blue-100 p-4 rounded-lg border">
         <h3 className="font-bold mb-2">🔗 Navigation:</h3>
-        <Link 
-          href="/login" 
-          className="text-blue-600 hover:text-blue-800 underline"
-        >
-          Go to Login Page →
-        </Link>
+        <div className="space-y-2">
+          <button 
+            onClick={goToLogin}
+            className="block text-blue-600 hover:text-blue-800 underline bg-transparent border-none cursor-pointer"
+          >
+            Go to Login Page →
+          </button>
+          <button 
+            onClick={goToTest}
+            className="block text-green-600 hover:text-green-800 underline bg-transparent border-none cursor-pointer"
+          >
+            Go to Test Page →
+          </button>
+        </div>
       </div>
       
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">

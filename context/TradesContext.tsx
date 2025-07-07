@@ -10,7 +10,7 @@ interface TradesContextType {
   tags: Tag[]
   notes: Note[]
   loading: boolean
-  addTrade: (trade: Omit<Trade, 'id' | 'created_at' | 'modified_at'>) => Promise<number>
+  addTrade: (trade: Omit<Trade, 'id' | 'created_at' | 'modified_at' | 'user_id'>) => Promise<number>
   updateTrade: (tradeId: number, updates: Partial<Omit<Trade, 'id' | 'created_at'>>) => Promise<void>
   deleteTrade: (tradeId: number) => Promise<void>
   addTag: (tag: Omit<Tag, 'id' | 'created_at'>) => Promise<number>
@@ -79,7 +79,7 @@ export function TradesProvider({ children }: { children: React.ReactNode }) {
   }, [user])
 
   // Trade operations
-  const addTrade = async (trade: Omit<Trade, 'id' | 'created_at' | 'modified_at'>): Promise<number> => {
+  const addTrade = async (trade: Omit<Trade, 'id' | 'created_at' | 'modified_at' | 'user_id'>): Promise<number> => {
     if (!user) throw new Error('User not authenticated')
     
     const tradeWithUser = { ...trade, user_id: user.id }

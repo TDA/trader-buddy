@@ -1,18 +1,48 @@
 'use client'
 
 import { useAuth } from '../../context/AuthContext'
+import { useTrades } from '../../context/TradesContext'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
 export default function Dashboard() {
   const { user, session, loading, signOut } = useAuth()
+  const { trades, loading: tradesLoading, addTrade } = useTrades()
   const router = useRouter()
 
+  console.log('Dashboard render:', { 
+    loading, 
+    hasSession: !!session, 
+    userEmail: user?.email,
+    tradesCount: trades.length 
+  })
+
   useEffect(() => {
+    console.log('Dashboard useEffect:', { loading, hasSession: !!session })
     if (!loading && !session) {
+      console.log('Dashboard: No session, redirecting to login')
       router.push('/login')
     }
   }, [session, loading, router])
+
+  const createDummyTrade = async () => {
+    try {
+      await addTrade({
+        ticker: 'AAPL',
+        asset_type: 'stock',
+        side: 'buy',
+        quantity: 100,
+        price: 150.25,
+        trade_date: new Date().toISOString(),
+        metadata: {
+          broker: 'test',
+          commission: 0
+        }
+      })
+    } catch (error) {
+      console.error('Error creating dummy trade:', error)
+    }
+  }
 
   if (loading) {
     return (
@@ -53,7 +83,87 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Dummy Trade Test Section */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h3 className="text-lg font-semibold text-blue-800 mb-2">
+              🧪 Test TradesContext
+            </h3>
+            <button
+              onClick={createDummyTrade}
+              disabled={tradesLoading}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+            >
+              {tradesLoading ? 'Loading...' : 'Create Dummy Trade'}
+            </button>
+            <p className="text-blue-700 mt-2">
+              Total trades: {trades.length}
+            </p>
+          </div>
+
+          {/* Trades List */}
+          {trades.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                📊 Your Trades ({trades.length})
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Ticker
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Type
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Side
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Quantity
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Price
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {trades.map((trade) => (
+                      <tr key={trade.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {trade.ticker}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {trade.asset_type}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            trade.side === 'buy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {trade.side.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {trade.quantity}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          ${trade.price.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(trade.trade_date).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-blue-800 mb-2">
                 Session Info
