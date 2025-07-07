@@ -58,8 +58,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    // Only run middleware on specific routes (temporarily excluding dashboard)
-    '/upload/:path*',
+    // Only run middleware on specific routes (temporarily excluding upload and dashboard)
     '/journal/:path*',
     '/login',
     '/auth/:path*'
