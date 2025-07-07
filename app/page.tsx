@@ -1,4 +1,5 @@
 import Image from "next/image";
+import SupabaseTest from "../components/SupabaseTest";
 
 export default function Home() {
   return (
@@ -12,6 +13,9 @@ export default function Home() {
       <div className="text-red-500 bg-blue-200 p-4 rounded-lg border-2 border-green-500">
         🎯 Direct Tailwind classes test - should look the same as above!
       </div>
+      
+      {/* Supabase Test */}
+      <SupabaseTest />
       
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <Image
