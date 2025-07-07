@@ -1,13 +1,31 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
-  const { signIn } = useAuth()
+  const { signIn, session, loading: authLoading } = useAuth()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && session) {
+      router.push('/dashboard')
+    }
+  }, [session, authLoading, router])
+
+  // Handle error messages from URL
+  useEffect(() => {
+    const error = searchParams.get('error')
+    if (error === 'auth_failed') {
+      setMessage('Authentication failed. Please try again.')
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,6 +42,20 @@ export default function LoginPage() {
     }
     
     setLoading(false)
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Loading...</h2>
+        </div>
+      </div>
+    )
+  }
+
+  if (session) {
+    return null // Will redirect to dashboard
   }
 
   return (
